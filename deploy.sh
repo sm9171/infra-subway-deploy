@@ -25,6 +25,16 @@ else
     echo -e "${txtgrn} $0 $BRANCH ${txtred} <$PROFILE> ${txtrst}"
     echo -e "${txtylw}=======================================${txtrst}"
 fi
+
+function profile_check(){
+  if [ "$PROFILE" = "test" -o "$PROFILE" = "local" -o "$PROFILE" = "dev" -o "$PROFILE" = "prod" ]; then
+          echo -e "${txtgrn} $PROFILE 프로필 진행 ${txtrst}"
+      else
+          echo -e "${txtred} 프로필 오류! { test | local | dev | prod } 이 프로필 중 하나를 입력해주세요. ${txtrst}"
+          exit 1
+      fi
+}
+
 function check_diff() {
     cd "$SHELL_SCRIPT_PATH" || exit 1
     git fetch
@@ -37,10 +47,8 @@ function check_diff() {
 }
 function repository_pull() {
     echo -e "${txtgrn} 저장소 $BRANCH pull 시작... ${txtrst}"
-    git stash
     git checkout "$BRANCH"
     git pull
-    git stash pop
     echo -e "${txtgrn} 저장소 pull 완료! ${txtrst}"
 }
 function gradle_build() {
@@ -65,15 +73,10 @@ function kill_process() {
 }
 function nohup_run() {
     echo -e "${txtgrn} nohup 실행... 프로필: $PROFILE ${txtrst}"
-    if [ "$PROFILE" = "local" -o "$PROFILE" = "dev" -o "$PROFILE" = "prod" ]; then
-        nohup java -jar -Dspring.profiles.active="$PROFILE" "$SHELL_SCRIPT_PATH"/build/libs/subway-0.0.1-SNAPSHOT.jar  1> logging.log 2>&1 &
-        echo -e "${txtgrn} nohup 실행 완료! ${txtrst}"
-    else
-        echo -e "${txtred} 프로필 오류! ${txtrst}"
-        exit 1
-    fi
+    nohup java -jar -Dspring.profiles.active="$PROFILE" "$SHELL_SCRIPT_PATH"/build/libs/subway-0.0.1-SNAPSHOT.jar  1> logging.log 2>&1 &
+    echo -e "${txtgrn} nohup 실행 완료! ${txtrst}"
 }
-
+profile_check
 check_diff
 repository_pull
 gradle_build
